@@ -1,0 +1,43 @@
+SQLAlchemy: SQLAlchemy is the most popular ORM in Python.
+
+It translates Python objects into SQL.
+Python Object --> SQLAlchemy --> SQL Query --> PostgreSQL
+
+You write Python. SQLAlchemy generates SQL.
+
+| Package         | Purpose               |
+| --------------- | --------------------- |
+| SQLAlchemy      | ORM                   |
+| psycopg2-binary | PostgreSQL driver     |
+| python-dotenv   | Read `.env` variables |
+
+- SQLAlchemy maps Python classes to database tables.
+- The Engine manages the connection to PostgreSQL.
+- Base is the parent class for all ORM models.
+- Models define the database schema.
+- create_all() creates tables that don't already exist.
+
+_____________________________________________________________
+
+SESSION
+A Session is a temporary workspace where SQLAlchemy tracks your 
+changes before sending them to the database.
+
+Almost every SQLAlchemy operation—creating users, querying products, 
+updating orders, deleting notes—uses a Session.
+
+FastAPI Route
+   │
+   ▼
+Session
+   │
+   ▼
+PostgreSQL
+
+The engine knows how to connect to PostgreSQL.
+But it doesn't keep track of:
+- New objects
+- Updated objects
+- Deleted objects
+- Transactions
+That's the Session's job.
