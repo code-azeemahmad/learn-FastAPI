@@ -13,3 +13,11 @@ class NoteResponse(BaseModel):
     title: str
     content: str
     
+class NoteUpdate(BaseModel):
+    title: str = Field(
+        max_length=30,
+    )
+    content: str = Field(
+        max_length=300
+    )
+
