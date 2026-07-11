@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from typing import Optional
 
 app = FastAPI()
 
@@ -8,9 +7,9 @@ def home():
     return {"message": "hello home"}
 
 
-@app.get("/users/{user_id}")
-def user(user_id: int):
-    return {"user_id": user_id}
+# @app.get("/users/{user_id}")
+# def user(user_id: int) -> dict:
+#     return {"user_id": user_id}
 
 
 @app.get("/search")
@@ -25,8 +24,21 @@ def get_products(category: str, page: int):
         "page": page
     }
 
+# @app.get("/option")
+# def option(q: str | None = None):   # optional query parameter
+#     return {"query": q}
+
+@app.get("/option")
+def option(q: str = "option"):   # default query parameter
+    return {"query": q}
 
 
+# mixing path and query parameters
+@app.get("/users/{user_id}")
+def get_user(user_id: int, details: bool = False):
+    return {"user_id": user_id, "details": details}
 
 # {variable_name}, (variable:Python type hint)
 # FastAPI converts the Python dictionary into JSON automatically.
+
+# FastAPI expects each combination of HTTP method + path to be unique.
