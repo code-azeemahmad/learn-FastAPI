@@ -1,4 +1,4 @@
-from dependency import get_settings
+from dependency import get_settings, profile
 from fastapi import FastAPI, Depends
 
 app = FastAPI()
@@ -9,6 +9,10 @@ def home(settings = Depends(get_settings)): # It does not call the function imme
 
 @app.get("/settings")
 def home(settings = Depends(get_settings)):
+    return settings
+
+@app.get("/profile")
+def home(settings = Depends(profile)):
     return settings
 
 

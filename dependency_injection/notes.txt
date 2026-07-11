@@ -37,4 +37,9 @@ In a real production FastAPI application, dependencies almost never return strin
 - Configuration settings (get_settings)
 - The authenticated user (get_current_user)
 
+________________________________________________________
 
+Dependency chaining or Nested dependencies
+User Request --> Check JWT Token --> Get User from Database --> Check User is Active --> Access Dashboard
+
+FastAPI automatically resolves the entire chain.
