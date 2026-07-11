@@ -14,5 +14,16 @@ SessionLocal = sessionmaker(
     autocommit=False,
 )
 
+def get_db():
+    db = SessionLocal()
+
+    try:
+        yield db
+
+    finally:
+        db.close()
+
+
 # engine is the bridge between Python and PostgreSQL.
 # echo=True, prints generated SQL in the terminal
+# Calling yield returns a generator, producing values one at a time.

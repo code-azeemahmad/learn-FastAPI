@@ -41,3 +41,6 @@ But it doesn't keep track of:
 - Deleted objects
 - Transactions
 That's the Session's job.
+
+db.add(new_user) SQLAlchemy starts tracking it.
+db.commit() It writes the changes to PostgreSQL.
