@@ -1,0 +1,5 @@
+FastAPI is a modern Python framework for building APIs.
+It is designed for speed, validation, and developer productivity.
+It uses Starlette for web functionality.
+It uses Pydantic for data validation.
+It's an excellent choice for AI/ML backends and microservices.
