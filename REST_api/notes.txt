@@ -1,0 +1,26 @@
+REST stands for: Representational State Transfer
+
+A REST API is an API that follows a set of conventions for exposing resources over HTTP.
+
+Instead of creating random URLs like:
+
+- /createStudentNow
+- /getAllStudentsDataPlease
+- /updateStudentInformation
+
+REST uses predictable patterns.
+
+- /students
+- /students/1
+- /courses
+- /courses/10
+_____________________________________________________
+| CRUD           | HTTP Method | Example            |
+| -------------- | ----------- | ------------------ |
+| Create         | POST        | POST /students     |
+| Read           | GET         | GET /students      |
+| Read One       | GET         | GET /students/1    |
+| Replace        | PUT         | PUT /students/1    |
+| Partial Update | PATCH       | PATCH /students/1  |
+| Delete         | DELETE      | DELETE /students/1 |
+|________________|_____________|____________________|
