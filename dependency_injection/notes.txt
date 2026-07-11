@@ -1,0 +1,40 @@
+Dependency: A dependency is anything your code needs to do its job
+Examples
+- Database session
+- Logged-in user
+- Configuration settings
+- Logger
+- AI model
+- Redis client
+- HTTP client
+________________________________________________________
+
+The Problem Without Dependency Injection
+
+Suppose every route creates its own database connection. (db = DatabaseConnection())
+one route
+another route
+another route
+You're repeating the same code everywhere violating DRY principle
+
+The Solution
+
+Instead, create the dependency once.
+def get_database():
+    return DatabaseConnection()
+
+Now every route simply says: "I need a database."
+FastAPI supplies it automatically.
+
+FastAPI --> Calls get_database() --> Gets Database --> Passes it to Route
+
+________________________________________________________
+
+FastAPI automatically calls the dependency function, that is called Injection
+
+In a real production FastAPI application, dependencies almost never return strings. Instead, they return shared resources like:
+- Database sessions (get_db)
+- Configuration settings (get_settings)
+- The authenticated user (get_current_user)
+
+
