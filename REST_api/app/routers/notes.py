@@ -49,3 +49,19 @@ def update_note(note_id: int, note: NoteUpdate) -> NoteResponse:
     )
             
 
+@router.delete("/{note_id}", status_code=status.HTTP_200_OK)
+def delete_note(note_id: int) -> None:
+
+    for index, note in enumerate(notes):
+
+        if note["id"] == note_id:
+            notes.pop(index)
+            return {
+                "message": "Note deleted successfully"
+            }
+    raise HTTPException(
+        status_code=404,
+        detail="Note not found!"
+    )
+
+
