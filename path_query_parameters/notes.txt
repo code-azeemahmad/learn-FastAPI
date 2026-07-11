@@ -1,0 +1,24 @@
+Dynamic Routing
+
+| Path Parameter        | Query Parameter                 |
+| --------------------- | ------------------------------- |
+| Identifies a resource | Filters or modifies the request |
+
+
+http://127.0.0.1:8000/users/abc
+user_id:int
+FastAPI immediately responds with a validation error (HTTP 422 
+Unprocessable Entity) instead of letting bad data reach your code.
+
+# http://127.0.0.1:8000/search?q=python
+# http://127.0.0.1:8000/products?category=toys&page=5
+
+
+# query parameters can be optional but path can't be
+
+FastAPI expects each combination of HTTP method + path to be unique.
+
+If the dynamic route is defined before /users/me, then a request to /users/me may treat "me" as the user_id.
+Best practice: Define fixed routes (like /users/me) before dynamic routes.
+
+Don't think of URLs as random strings—think of them as a resource hierarchy.
