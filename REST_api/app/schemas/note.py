@@ -8,3 +8,8 @@ class NoteCreate(BaseModel):
         max_length=300
     )
 
+class NoteResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    
