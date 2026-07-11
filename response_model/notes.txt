@@ -1,0 +1,49 @@
+Every API has two directions.
+        Client
+           │
+           │ Request
+           ▼
+        FastAPI
+           │
+           │ Response
+           ▼
+        Client
+
+Request Model
+{
+    "username": "azeem",
+    "email": "azeem@example.com",
+    "password": "mySecret123"
+}
+Response Model
+{
+    "id": 1,
+    "username": "azeem",
+    "email": "azeem@example.com"
+}
+
+
+Professional APIs usually have multiple models.
+- UserCreate
+- UserUpdate
+- UserResponse
+- UserLogin
+- UserPublic
+Each model has a different purpose.
+
+_________________________________________________
+
+HTTP Status Codes
+_________________________________________________________________________________
+| Code | Meaning               | When to Use                                    |
+| ---: | --------------------- | ---------------------------------------------- |
+|  200 | OK                    | Successful GET, PUT, PATCH                     |
+|  201 | Created               | Resource created successfully                  |
+|  204 | No Content            | Successful request with no body (often DELETE) |
+|  400 | Bad Request           | Client sent an invalid request                 |
+|  401 | Unauthorized          | Authentication required or invalid             |
+|  403 | Forbidden             | Authenticated but not allowed                  |
+|  404 | Not Found             | Resource doesn't exist                         |
+|  422 | Unprocessable Entity  | Validation failed                              |
+|  500 | Internal Server Error | Unexpected server error                        |
+|______________________________|________________________________________________|
