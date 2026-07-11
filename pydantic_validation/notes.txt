@@ -49,3 +49,99 @@ A backend engineer chooses the HTTP method based on the operation:
 
 Use a separate Pydantic model for each type of request.
 Give models meaningful names (UserCreate, ProductCreate, LoginRequest) rather than generic names like Data.
+
+____________________________________________________________________________________________________________
+
+Pydantic prevents this before your business logic runs.
+
+Why Inherit from BaseModel? BaseModel provides:
+- Validation
+- Serialization
+- Deserialization
+- Documentation
+- Type conversion
+- Error reporting
+
+Field() lets you attach:
+- validation rules
+- documentation
+- examples
+- descriptions
+- default values
+- constraints
+Think of it as adding rules and metadata to a field.
+
+JSON --> Pydantic --> Check required fields --> Check data types 
+--> Check min/max constraints --> Create Product object -->
+____________________________________________________________________________________________________________
+
+Numeric constraints
+______________________________________
+| Constraint | Meaning               |
+| ---------- | --------------------- |
+| `gt`       | Greater than          |
+| `ge`       | Greater than or equal |
+| `lt`       | Less than             |
+| `le`       | Less than or equal    |
+____________________________________________________________________________________________________________
+
+Instead of using plain str for everything, Pydantic offers specialized types
+_____________________________________________________
+| Type       | Purpose                              |
+| ---------- | ------------------------------------ |
+| `EmailStr` | Email validation                     |
+| `AnyUrl`   | URL validation                       |
+| `UUID`     | UUID values                          |
+| `datetime` | Date & time                          |
+| `date`     | Calendar date                        |
+| `Decimal`  | Precise decimal values (e.g., money) |
+
+Note: EmailStr requires an additional package: pip install email-validator
+
+____________________________________________________________________________________________________________
+
+
+Pydantic validates the shape and format of data. Your application code enforces business rules.
+
+____________________________________________________________________________________________________________
+
+Nested Models: Production APIs often work with nested objects.
+
+class Address(BaseModel):
+    city: str
+    country: str
+class Student(BaseModel):
+    name: str
+    address: Address
+Request:
+{
+    "name": "Ali",
+    "address": {
+        "city": "Lahore",
+        "country": "Pakistan"
+    }
+}
+Pydantic validates both models automatically.
+
+Lists of Models: Suppose an order contains multiple products.
+class Product(BaseModel):
+    name: str
+    quantity: int
+class Order(BaseModel):
+    customer: str
+    products: list[Product]
+Request:
+{
+    "customer": "Ali",
+    "products": [
+        {
+            "name": "Laptop",
+            "quantity": 1
+        },
+        {
+            "name": "Mouse",
+            "quantity": 2
+        }
+    ]
+}
+Every product in the list is validated individually.
