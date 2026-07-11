@@ -1,0 +1,58 @@
+Fat Route: A route that contains too much business logic.
+
+Instead of only handling HTTP requests, it becomes responsible for everything.
+
+A FastAPI route has one primary responsibility:
+Receive an HTTP request and return an HTTP response.
+It should not contain business rules.
+
+Responsibilities of a Route
+A good route should:
+    - Receive HTTP request
+    - Read path/query/body parameters
+    - Call service layer
+    - Return response
+
+
+Production Architecture
+        Client
+           │
+           ▼
+        Router
+           │
+           ▼
+        Service
+           │
+           ▼
+        Repository
+           │
+           ▼
+        Database
+
+_____________________________________________________________________________________________________________
+
+Single Responsibility Principle (SRP): A class, function, or module should have only one reason to change.
+
+- Router changes only when...The API changes.
+- Service changes only when...Business rules change.
+- Repository changes only when...Database implementation changes.
+
+Full Production Architecture               Responsibility Flow                                               
+              Client                         HTTP request                                   
+                 │                                |                          
+                 ▼                              Router                             
+            FastAPI Router                        |                                 
+                 │                           Business logic                               
+                 ▼                                |                          
+          Service Layer                           ▼                             
+                 │                             Service                             
+                 ▼                                |                          
+       Repository Layer                           ▼                              
+                 │                          Database Operation                             
+                 ▼                                |                          
+          SQLAlchemy ORM                      Repository                                    
+                 │                                |                          
+                 ▼                                ▼                          
+           PostgreSQL                          Database                               
+                                                              
+Each layer has one job.          Notice how responsibilities are separated.                                       
