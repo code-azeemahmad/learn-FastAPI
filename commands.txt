@@ -1,0 +1,12 @@
+python --version
+
+python -m venv .venv
+
+.venv\Scripts\activate.bat
+
+pip install fastapi uvicorn
+
+pip show fastapi
+pip show uvicorn
+
+pip freeze > requirements.txt
