@@ -44,3 +44,18 @@ That's the Session's job.
 
 db.add(new_user) SQLAlchemy starts tracking it.
 db.commit() It writes the changes to PostgreSQL.
+
+
+_____________________________________________________________
+
+SQLAlchemy Model: Represents a database table.
+Its job is database interaction.
+
+Pydantic Model: Represents API data.Its job is:
+Its job is:
+- Validate requests
+- Validate responses
+- Generate API documentation
+- Serialize/deserialize JSON
+
+_____________________________________________________________
