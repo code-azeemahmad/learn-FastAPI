@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from app.database.database import get_db
 from sqlalchemy.orm import Session
 from app.models.user import User
-from app.schemas.user import UserCreate, UserResponse
+from app.schemas.user import UserCreate, UserResponse, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["User"])
 
@@ -36,6 +36,25 @@ def get_user(user_id: int, db: Session = Depends(get_db),):
             status_code=404,
             detail="User not found",
         )
+
+    return user
+
+@router.put("/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK,)
+def update_user(user_id: int, user_data: UserUpdate, db: Session = Depends(get_db),) -> UserResponse:
+
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    user.name = user_data.name
+    user.email = user_data.email
+
+    db.commit()
+    db.refresh(user)
 
     return user
 
