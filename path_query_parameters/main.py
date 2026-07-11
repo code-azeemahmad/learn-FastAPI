@@ -18,6 +18,14 @@ def search(q: str):
     return {"Query": q}
 
 
+@app.get("/products")
+def get_products(category: str, page: int):
+    return {
+        "category": category,
+        "page": page
+    }
+
+
 
 
 # {variable_name}, (variable:Python type hint)
