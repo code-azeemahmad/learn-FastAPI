@@ -33,3 +33,19 @@ def get_note(note_id: int) -> NoteResponse:
             detail="Note not found!"
         )
 
+@router.put("/{note_id}", response_model=NoteResponse, status_code=status.HTTP_200_OK)
+def update_note(note_id: int, note: NoteUpdate) -> NoteResponse:
+
+    for existing_note in notes:
+        if existing_note["id"] == note_id:
+                existing_note["title"] = note.title
+                existing_note["content"] = note.content
+
+                return existing_note
+        
+    raise HTTPException(
+        status_code = 404,
+        detail = "Note not found!"
+    )
+            
+
