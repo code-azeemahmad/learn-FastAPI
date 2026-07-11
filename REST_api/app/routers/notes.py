@@ -15,3 +15,9 @@ def create_notes(note:  NoteCreate) -> list:
     notes.append(new_note)
     return new_note
 
+
+@router.get("/", response_model=list[NoteResponse]) # return a list where every element looks like NoteResponse
+def get_notes() -> list[NoteResponse]:
+    return notes
+
+
