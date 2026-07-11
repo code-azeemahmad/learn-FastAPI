@@ -10,3 +10,11 @@ pip show fastapi
 pip show uvicorn
 
 pip freeze > requirements.txt
+
+uvicorn  main:app --reload
+(
+    main = main.py
+    app = app = FastAPI()
+    --reload = Restart automatically whenever the code changes.
+)
+
