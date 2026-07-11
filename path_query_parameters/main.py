@@ -13,6 +13,11 @@ def user(user_id: int):
     return {"user_id": user_id}
 
 
+@app.get("/search")
+def search(q: str):
+    return {"Query": q}
+
+
 
 
 # {variable_name}, (variable:Python type hint)
