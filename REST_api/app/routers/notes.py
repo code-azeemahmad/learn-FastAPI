@@ -65,3 +65,22 @@ def delete_note(note_id: int) -> None:
     )
 
 
+@router.patch("/{note_id}", response_model=NoteResponse, status_code=status.HTTP_200_OK)
+def patch_note(note_id: int, note: NotePatch) -> NoteResponse:
+
+    for existing_note in notes:
+
+        if existing_note["id"] ==  note_id:
+
+            if note.title is not None:
+                existing_note["title"] = note.title
+
+            if note.content is not None:
+                existing_note["content"] = note.content
+            
+            return existing_note
+    
+    raise HTTPException(
+        status_code=404,
+        detail="Note not found!"
+    )
