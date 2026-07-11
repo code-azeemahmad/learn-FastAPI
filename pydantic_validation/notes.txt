@@ -1,0 +1,51 @@
+Request Body: A request body is the data sent by the client to the server.
+
+React App  --> POST /users --> Body {...} --> 
+
+| HTTP Method | Request Body? |
+| ----------- | ------------- |
+| GET         | Usually No    |
+| POST        | Yes           |
+| PUT         | Yes           |
+| PATCH       | Yes           |
+| DELETE      | Sometimes     |
+
+Why not use query parameters?
+/signup?name=Azeem&email=azeem@gmail.com&password=123456
+
+Problems:
+- Password is visible in the URL.
+- Limited amount of data can be sent.
+- Difficult to send complex structures.
+
+Instead, the browser sends the information in the request body.
+{
+    "name": "Azeem",
+    "email": "azeem@gmail.com",
+    "password": "123456",
+    "age": 22
+}
+
+
+REST API Convention
+A backend engineer chooses the HTTP method based on the operation:
+| Operation               | HTTP Method          |
+| ----------------------- | -------------------- |
+| Get all users           | `GET /users`         |
+| Get one user            | `GET /users/{id}`    |
+| Create a user           | `POST /users`        |
+| Update a user           | `PUT /users/{id}`    |
+| Partially update a user | `PATCH /users/{id}`  |
+| Delete a user           | `DELETE /users/{id}` |
+
+
+#  fastapi has a response_model=UserResponse
+
+--> A request body carries structured data from the client to the server.
+--> FastAPI uses Pydantic models to describe and validate that data.
+--> BaseModel is the foundation of every Pydantic model.
+--> FastAPI automatically parses JSON into Python objects.
+--> Validation happens before your route function executes.
+
+Use a separate Pydantic model for each type of request.
+Give models meaningful names (UserCreate, ProductCreate, LoginRequest) rather than generic names like Data.
