@@ -3,3 +3,68 @@ It is designed for speed, validation, and developer productivity.
 It uses Starlette for web functionality.
 It uses Pydantic for data validation.
 It's an excellent choice for AI/ML backends and microservices.
+______________________________________________________________
+When to Use Each?
+
+--> Choose FastAPI when:
+
+- Building REST APIs
+- AI/ML services
+- LLM applications
+- Microservices
+- High-performance backends
+
+--> Choose Flask when:
+
+- Learning web basics
+- Very small projects
+- Simple prototypes
+
+--> Choose Django when:
+
+- Large web applications
+- Admin dashboards
+- CMS-like systems
+- Projects needing batteries-included features
+______________________________________________________________
+uvicorn is an ASGI server
+
+Browser
+
+↓
+
+HTTP Request
+
+↓
+
+Uvicorn
+
+↓
+
+FastAPI
+
+↓
+
+Python Function
+
+↓
+
+Response
+
+↓
+
+Browser
+______________________________________________________________
+http://127.0.0.1:8000/
+
+Automatic API Documentation
+
+http://127.0.0.1:8000/docs
+http://127.0.0.1:8000/redoc
+
+Swagger UI. It allows you to:
+
+- View all endpoints.
+- Read request and response details.
+- Test endpoints directly from the browser.
+- See generated OpenAPI documentation.
