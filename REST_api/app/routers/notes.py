@@ -21,3 +21,15 @@ def get_notes() -> list[NoteResponse]:
     return notes
 
 
+@router.get("/{note_id}", response_model=NoteResponse)
+def get_note(note_id: int) -> NoteResponse:
+
+    for note in notes:
+        if note["id"] == note_id:
+            return note
+    else:
+        raise HTTPException(    # Exceptions are meant to be raised.
+            status_code=404,
+            detail="Note not found!"
+        )
+
