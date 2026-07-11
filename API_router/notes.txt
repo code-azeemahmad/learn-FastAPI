@@ -1,0 +1,35 @@
+Each file has a single responsibility.
+
+API Router:
+APIRouter is like a mini FastAPI application.
+FastAPI App
+│
+├── Student Router
+├── Course Router
+├── User Router
+├── Auth Router
+└── Product Router
+Each router owns a related set of endpoints. Finally, the main application combines them.
+
+
+'''app.include_router(users.router)
+Take all the routes from users.py and 
+add them to this application'''
+
+app/
+│
+├── routers/
+├── schemas/
+├── models/
+├── services/
+├── repositories/
+├── database/
+├── core/
+└── main.py
+
+Best Practices
+- Keep main.py focused on application setup.
+- Group routes by feature, not by HTTP method.
+- Use prefixes to create meaningful URLs.
+- Use tags to organize Swagger documentation.
+- Name routers with plural nouns when representing collections (users.py, products.py).
