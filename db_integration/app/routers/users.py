@@ -21,6 +21,12 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
 
     return user # FastAPI converts the SQLAlchemy object into: UserResponse, automatically
 
+@router.get("/", response_model=list[UserResponse],)
+def get_users(db: Session = Depends(get_db),):
+
+    return db.query(User).all()
+
+
 
 
 
