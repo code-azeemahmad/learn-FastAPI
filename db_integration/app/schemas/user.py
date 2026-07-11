@@ -15,6 +15,22 @@ class UserResponse(BaseModel):
         "from_attributes": True
     }
 
+class UserUpdate(BaseModel):
+    name: str = Field(
+        min_length=2,
+        max_length=100,
+    )
+    email: EmailStr
+
+
+class UserPatch(BaseModel):
+    name: str | None = Field(
+        default=None,
+        min_length=2,
+        max_length=100,
+    )
+    email: EmailStr | None = None
+
 '''Our route returns a SQLAlchemy object: return user
 Not a dictionary.
 
