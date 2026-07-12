@@ -4,6 +4,7 @@ from pydantic import BaseModel, EmailStr, Field
 class UserCreate(BaseModel):
     name: str = Field(min_length=2, max_length=100)
     email: EmailStr
+    password: str
 
 
 class UserResponse(BaseModel):
@@ -21,6 +22,7 @@ class UserUpdate(BaseModel):
         max_length=100,
     )
     email: EmailStr
+    password: str
 
 
 class UserPatch(BaseModel):
@@ -30,6 +32,7 @@ class UserPatch(BaseModel):
         max_length=100,
     )
     email: EmailStr | None = None
+    password: str
 
 '''Our route returns a SQLAlchemy object: return user
 Not a dictionary.
