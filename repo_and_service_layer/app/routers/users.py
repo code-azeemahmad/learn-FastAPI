@@ -1,93 +1,58 @@
-from fastapi import APIRouter, Depends, status, HTTPException
-from app.database.database import get_db
-from sqlalchemy.orm import Session
-from app.repositories.user_repository import UserRepository
-from app.schemas.user import UserCreate, UserResponse, UserUpdate, UserPatch
+from fastapi import APIRouter, Depends, status
+
+from app.schemas.user import UserCreate, UserPatch, UserResponse, UserUpdate
+from app.services.dependencies import get_user_service
+from app.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["User"])
 
+#  refactor the routes to such extent that they read like reading English sentences
+
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def create_user(user_data: UserCreate, db: Session = Depends(get_db)) -> UserResponse:
-
-    repository = UserRepository(db)
-
-    existing_user = repository.get_by_email(user_data.email)
-
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already exists",
-        )
-
-    return repository.create(user_data)
-
-@router.get("/", response_model=list[UserResponse],)
-def get_users(db: Session = Depends(get_db),) -> list[UserResponse]:
-
-    repository = UserRepository(db)
-
-    return repository.get_all()
-
-@router.get("/{user_id}", response_model=UserResponse,)
-def get_user(user_id: int, db: Session = Depends(get_db),) -> UserResponse:
-
-    repository = UserRepository(db)
-
-    user = repository.get_by_id(user_id)
-
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-
-    return user
-
-@router.put("/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK,)
-def update_user(user_id: int, user_data: UserUpdate, db: Session = Depends(get_db),) -> UserResponse:
-
-    repository = UserRepository(db)
-
-    user = repository.get_by_id(user_id)
-
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-
-    return repository.update(user, user_data)
+def create_user(user_data: UserCreate, service: UserService = Depends(get_user_service)) -> UserResponse:
+    return service.create_user(user_data)
 
 
-@router.patch("/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK,)
-def patch_user(user_id: int, user_data: UserPatch, db: Session = Depends(get_db),) -> UserResponse:
-
-    repository = UserRepository(db)
-
-    user = repository.get_by_id(user_id)
-
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-
-    return repository.patch(user, user_data)
+@router.get("/", response_model=list[UserResponse])
+def get_users(service: UserService = Depends(get_user_service)) -> list[UserResponse]:
+    return service.get_users()
 
 
-@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT,)
-def delete_user(user_id: int, db: Session = Depends(get_db),) -> None:
+@router.get("/{user_id}", response_model=UserResponse)
+def get_user(user_id: int, service: UserService = Depends(get_user_service)) -> UserResponse:
+    return service.get_user(user_id)
 
-    repository = UserRepository(db)
 
-    user = repository.get_by_id(user_id)
+@router.put("/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK)
+def update_user(user_id: int, user_data: UserUpdate, service: UserService = Depends(get_user_service)) -> UserResponse:
+    return service.update_user(user_id, user_data)
 
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
 
-    repository.delete(user)
+@router.patch("/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK)
+def patch_user(user_id: int, user_data: UserPatch, service: UserService = Depends(get_user_service)) -> UserResponse:
+    return service.patch_user(user_id, user_data)
 
-    return
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user(user_id: int, service: UserService = Depends(get_user_service)) -> None:
+    service.delete_user(user_id)
+
+
+'''
+Client
+   │
+   ▼
+Router
+   │
+   ▼
+UserService
+   │
+   ▼
+UserRepository
+   │
+   ▼
+SQLAlchemy
+   │
+   ▼
+PostgreSQL
+'''

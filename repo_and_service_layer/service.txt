@@ -1,0 +1,52 @@
+Client
+   │
+   ▼
+Router
+   │
+   ▼
+Service (Service Layer: A Service Layer contains the application's business logic.)
+   │
+   ▼
+Repository
+   │
+   ▼
+Database
+
+It answers questions like:
+- Can this user register?
+- Is this email already taken?
+- Can this order be cancelled?
+- Is the user allowed to perform this action?
+- Should we send an email?
+- Should we update the cache?
+
+Notice these are business decisions, not database operations.
+
+_____________________________________________
+| Layer      | Responsibility               |
+| ---------- | ---------------------------- |
+| Router     | HTTP requests and responses  |
+| Service    | Business logic and workflows |
+| Repository | Database access              |
+| Database   | Data storage                 |
+|____________|______________________________|
+
+Router
+   │
+   ▼
+UserService
+   │
+   ├── Email Exists?
+   ├── User Exists?
+   ├── Business Rules
+   ▼
+UserRepository
+
+Now each layer has a single responsibility.
+
+Best Practices
+- Keep services focused on one domain (UserService, AuthService, etc.).
+- Reuse service methods (update_user() calls get_user()).
+- Let services coordinate repositories and external systems.
+- Use dependency injection instead of manually constructing services in routes.
+- Keep repositories unaware of FastAPI and HTTP whenever possible.
