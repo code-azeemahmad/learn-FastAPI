@@ -1,12 +1,18 @@
 from pwdlib import PasswordHash
 
-password_hash = PasswordHash.recommended()
+class PasswordHasher:
+    """Handles password hashing and verification."""
 
-def hash_password(password: str) -> str:
-    """Hash a plaintext password."""
-    return password_hash.hash(password)
+    def __init__(self) -> None:
+        self._password_hash = PasswordHash.recommended()
 
+    def hash(self, password: str) -> str:
+        """Hash a plaintext password."""
+        return self._password_hash.hash(password)
 
-def verify_password(plain_password: str, hashed_password: str,) -> bool:
-    """Verify a plaintext password against its hash."""
-    return password_hash.verify(plain_password, hashed_password,)
+    def verify(self, plain_password: str, hashed_password: str) -> bool:
+        """Verify a plaintext password against its hash."""
+        return self._password_hash.verify(
+            plain_password,
+            hashed_password,
+        )
