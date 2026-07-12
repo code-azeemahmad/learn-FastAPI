@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.database.base import Base
 from app.database.database import engine
+from app.handlers.exception_handlers import register_exception_handlers
 
 from app.routers import users
 
@@ -10,6 +11,7 @@ from app.models import user  # noqa: F401
 
 app = FastAPI()
 
+register_exception_handlers(app)
 app.include_router(users.router)
 
 @app.on_event("startup")

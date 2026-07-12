@@ -1,0 +1,62 @@
+Custom Exceptions & Global Exception Handlers
+
+Client                        Client                                      
+   │                            |                                   
+   ▼                            ▼                                    
+Router                        Router                                       
+   │                            |                                    
+   ▼                            ▼                                   
+UserService                 UserService                                          
+   │                            |                                    
+   ├── HTTPException            |    EmailAlreadyExistsError, UserNotFoundError                             
+   ▼                            ▼                                   
+Repository                  Repository                                         
+                                |
+                                ▼
+                    Global Exception Handler 
+                                |
+                                ▼
+                           HTTP Response
+
+
+
+What is a Custom Exception?
+
+Instead of raising a generic exception: raise Exception("User not found")
+
+or a framework-specific exception: raise HTTPException(...)
+
+we create exceptions that represent our business domain.
+Examples:
+
+- UserNotFoundError
+- EmailAlreadyExistsError
+- InvalidCredentialsError
+- InsufficientBalanceError
+- OrderAlreadyShippedError
+- Notice something.
+- These names describe the problem, not the HTTP response.
+
+Folder Structure
+app/
+│
+├── exceptions/
+│   ├── __init__.py
+│   └── user.py
+│
+├── handlers/
+│   └── exception_handlers.py
+│
+├── services/
+├── repositories/
+├── routers/
+└── main.py
+
+Why separate them?
+
+exceptions/ defines what can go wrong.
+handlers/ defines how HTTP clients should see those errors.
+
+__________________________________________________________________
+
+a few more repositories, we'll revisit the Generic Repository pattern

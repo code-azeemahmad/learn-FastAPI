@@ -1,7 +1,7 @@
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserCreate, UserPatch, UserUpdate
 from app.models.user import User
-from fastapi import HTTPException, status
+from app.exceptions.user import EmailAlreadyExistsException, UserNotFoundException
 
 
 class UserService:
@@ -15,10 +15,7 @@ class UserService:
         existing_user = self.user_repository.get_by_email(user_data.email)
 
         if existing_user:
-            raise  HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already exists"
-            )
+            raise EmailAlreadyExistsException(user_data.email)
         return self.user_repository.create(user_data)
     
 
@@ -30,10 +27,7 @@ class UserService:
         user = self.user_repository.get_by_id(user_id)
 
         if user is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
+            raise UserNotFoundException(user_id)
         
         return user
 
@@ -42,10 +36,7 @@ class UserService:
         # user = self.user_repository.get_by_id(user_id)
 
         # if user is None:
-        #     raise HTTPException(
-        #         status_code=status.HTTP_404_NOT_FOUND,
-        #         detail="User not found"
-        #     )
+        #     raise UserNotFoundException(user_id)
 
         user = self.get_user(user_id)
         
@@ -58,10 +49,7 @@ class UserService:
         existing_user = self.user_repository.get_by_email(user_data.email)
 
         if existing_user and existing_user.id != user.id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already exists",
-            )
+            raise EmailAlreadyExistsException(user_data.email)
 
         return self.user_repository.update(user, user_data)
 
@@ -73,9 +61,6 @@ class UserService:
             existing_user = self.user_repository.get_by_email(user_data.email)
 
             if existing_user and existing_user.id != user.id:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Email already exists",
-                )
+                raise EmailAlreadyExistsException(user_data.email)
 
         return self.user_repository.patch(user, user_data)
