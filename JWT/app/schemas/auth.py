@@ -13,16 +13,35 @@ class LoginRequest(BaseModel):
     password: str = Field(...)
 
 
-# What happens when a user signs up?
-'''Receive Request --> Validate Request --> Check duplicate 
-email --> Hash password --> Save user'''
-# Which layer owns each step?
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
 '''
-| Task            | Layer              |
-| --------------- | ------------------ |
-| Validate JSON   | FastAPI + Pydantic |
-| Check email     | AuthService        |
-| Hash password   | Security           |
-| Save user       | Repository         |
-| Return response | Router             |
+Client
+
+↓
+
+POST /auth/login
+
+↓
+
+AuthService
+
+↓
+
+Verify Password
+
+↓
+
+JWTService
+
+↓
+
+Generate Token
+
+↓
+
+Return Token
 '''
