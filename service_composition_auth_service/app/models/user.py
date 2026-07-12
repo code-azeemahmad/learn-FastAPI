@@ -11,3 +11,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(100))
     email: Mapped[str] = mapped_column(String(255), unique=True)
     password_hash: Mapped[str] = mapped_column(nullable=False)
+
+
+'''password_hash: Mapped[str] = mapped_column(nullable=True)
+Learn about two phase migration and back fill hashes'''
