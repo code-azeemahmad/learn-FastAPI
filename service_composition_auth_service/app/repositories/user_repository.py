@@ -30,17 +30,20 @@ class UserRepository:
         return self.db.query(User).all()
     
 
-    def create(self, user: UserCreate) -> User:
-        new_user = User(
-            name=user.name,
-            email=user.email,
+    def create(
+        self, *, name: str, email: str, password_hash: str,) -> User:
+        
+        user = User(
+            name=name,
+            email=email,
+            password_hash=password_hash,
         )
 
-        self.db.add(new_user)
+        self.db.add(user)
         self.db.commit()
-        self.db.refresh(new_user)
+        self.db.refresh(user)
 
-        return new_user 
+        return user
 
 
     def delete(self, user: User) -> None:
