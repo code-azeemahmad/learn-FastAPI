@@ -25,3 +25,6 @@ alembic init alembic
 alembic stamp head
 alembic revision --autogenerate -m "initial schema"
 alembic upgrade head
+
+python -c "import secrets; print(secrets.token_hex(32))"
+e40be0605784bc69d75b9d2fe0709f4f667039472e0b339b3abf684320def441
