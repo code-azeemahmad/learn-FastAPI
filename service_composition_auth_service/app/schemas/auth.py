@@ -6,7 +6,11 @@ class RegisterRequest(BaseModel):   #  this schema belongs to auth
     password: str = Field(..., min_length=8)
 
 
+class LoginRequest(BaseModel):
+    """Request schema for user login."""
 
+    email: EmailStr
+    password: str = Field(...)
 
 
 # What happens when a user signs up?
