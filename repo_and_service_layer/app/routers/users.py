@@ -6,7 +6,9 @@ from app.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["User"])
 
-#  refactor the routes to such extent that they read like reading English sentences
+# refactor the routes to such extent that they read like reading English sentences
+# Read it like English:
+# When someone POSTs to /users, create a user using the UserService.
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(user_data: UserCreate, service: UserService = Depends(get_user_service)) -> UserResponse:
