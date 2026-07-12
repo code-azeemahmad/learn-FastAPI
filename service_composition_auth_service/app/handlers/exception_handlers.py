@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
-from app.exceptions.user import EmailAlreadyExistsException, UserNotFoundException
+from app.exceptions.user import EmailAlreadyExistsException, UserNotFoundException, InvalidCredentialsError
 
 
 def register_exception_handlers(app: FastAPI) -> None:
@@ -22,6 +22,16 @@ def register_exception_handlers(app: FastAPI) -> None:
             status_code=status.HTTP_400_BAD_REQUEST,
             content={
                 "error": "EmailAlreadyExists",
+                "detail": str(exc),
+            },
+        )
+    
+
+    @app.exception_handler(InvalidCredentialsError)
+    async def invalid_credentials_handler(request: Request, exc: InvalidCredentialsError) -> JSONResponse:
+        return JSONResponse(
+            status_code=401,
+            content={
                 "detail": str(exc),
             },
         )

@@ -15,3 +15,10 @@ class EmailAlreadyExistsException(AppException):
     def __init__(self, email: str) -> None:
         self.email = email
         super().__init__(f"Email '{email}' already exists")
+
+
+class InvalidCredentialsError(AppException):
+    """Raised when authentication fails."""
+
+    def __init__(self) -> None:
+        super().__init__("Invalid email or password.")
