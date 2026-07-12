@@ -1,0 +1,23 @@
+A Repository is a class responsible for all database operations for a specific entity.
+
+The Repository Pattern abstracts the persistence layer.
+
+All user queries live together.
+
+Client
+   │
+   ▼
+Router
+   │
+   ▼
+UserRepository
+   │
+   ├── get_by_email()
+   ├── create()
+   ├── get_by_id()
+   ├── get_all()
+   └── delete()
+
+Now only Repository knows SQLAlchemy
+
+Why a class? A repository needs access to the database session.
