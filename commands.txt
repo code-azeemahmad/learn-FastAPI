@@ -18,3 +18,10 @@ uvicorn  main:app --reload
     --reload = Restart automatically whenever the code changes.
 )
 
+
+dir alembic\versions
+tree /f alembic
+alembic init alembic
+alembic stamp head
+alembic revision --autogenerate -m "initial schema"
+alembic upgrade head
