@@ -14,7 +14,10 @@ from app.models.user import User
 from app.exceptions.user import InvalidCredentialsError
 from app.exceptions.auth import ForbiddenError
 
+from collections.abc import Callable
+
 security = HTTPBearer()
+
 
 def get_user_repository(db: Session = Depends(get_db),) -> UserRepository:
     return UserRepository(db)
@@ -70,23 +73,14 @@ def require_admin(
     return current_user
 
 
-'''
-Authentication
+def require_roles(*roles: str) -> Callable[..., User]:
+    def dependency(
+        current_user: User = Depends(get_current_user),
+    ) -> User:
 
-Request
-    │
-    ▼
-JWT
-    │
-    ▼
-get_current_user()
-    │
-    ▼
-User object
-    │
-    ▼
-require_admin()
-    │
-    ▼
-Admin User
-'''
+        if current_user.role not in roles:
+            raise ForbiddenError()
+
+        return current_user
+
+    return dependency

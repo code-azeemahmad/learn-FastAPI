@@ -5,7 +5,7 @@ from app.schemas.user import UserResponse
 from app.services.auth_service import AuthService
 from app.services.dependencies import get_auth_service
 from app.models.user import User
-from app.services.dependencies import get_current_user, get_user_service, require_admin
+from app.services.dependencies import get_current_user, get_user_service, require_roles
 from app.services.user_service import UserService
 
 
@@ -31,6 +31,6 @@ def get_profile(current_user: User = Depends(get_current_user)) -> UserResponse:
 def delete_user(
     user_id: int,
     service: UserService = Depends(get_user_service),
-    current_user: User = Depends(require_admin),
+    current_user: User = Depends(require_roles("admin")),
 ):
     return service.delete_user(user_id)
