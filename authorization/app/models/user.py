@@ -14,7 +14,7 @@ class User(Base):
     role: Mapped[str] = mapped_column(
         String(20),
         default="user",
-        nullable=True,  # temporary nullable=True for two phase migration
+        nullable=False,  # temporary nullable=True for two phase migration
     )
 
 
