@@ -963,3 +963,352 @@ Given the goal of building AI-powered backends, RAG systems, OpenAI/Ollama integ
 These applications spend a significant amount of time waiting on databases, vector stores, and external AI services, making asynchronous programming a valuable skill.
 
 That said, learning the synchronous architecture first was also the right path — it's what makes the *why* behind async actually click.
+
+
+# Module 8 — Async FastAPI
+## Lesson 4 — Migrating from Sync SQLAlchemy to Async SQLAlchemy (Architecture)
+
+> No coding yet. Today's goal is to understand the architecture before touching any files.
+
+---
+
+## 1. Why Can't We Just Write `async def`?
+
+Suppose you change your repository:
+
+```python
+async def get_all(self):
+    return self.db.query(User).all()
+```
+
+Looks async, right? **Actually, no.**
+
+Why? Because this line:
+
+```python
+self.db.query(User).all()
+```
+
+is still using a **synchronous** database driver. The database call blocks until PostgreSQL responds. Your event loop is stuck waiting.
+
+```
+Coroutine
+   ↓
+Blocking SQL Query
+   ↓
+Event Loop Stops
+```
+
+This defeats the purpose of async.
+
+---
+
+## 2. What Actually Makes Database Access Async?
+
+There are **four pieces** that must work together.
+
+### Piece 1 — Async Driver
+
+Today:
+
+```
+SQLAlchemy → psycopg2
+```
+
+`psycopg2` is synchronous. Instead we use an asynchronous PostgreSQL driver — examples: `asyncpg`, `psycopg` (async mode).
+
+Now:
+
+```
+SQLAlchemy → asyncpg → PostgreSQL
+```
+
+The driver itself knows how to perform non-blocking I/O.
+
+### Piece 2 — Async Engine
+
+Today:
+
+```python
+engine = create_engine(...)
+```
+
+Tomorrow:
+
+```python
+engine = create_async_engine(...)
+```
+
+Think of the engine as the bridge between SQLAlchemy and PostgreSQL. A synchronous bridge can't suddenly become asynchronous — we replace the bridge.
+
+### Piece 3 — Async Session
+
+Today: `Session`
+
+Tomorrow: `AsyncSession`
+
+This session understands asynchronous database operations.
+
+### Piece 4 — Awaitable Queries
+
+Today:
+
+```python
+users = session.query(User).all()
+```
+
+Tomorrow:
+
+```python
+result = await session.execute(...)
+```
+
+Notice the keyword `await` — now the coroutine can pause while PostgreSQL is working.
+
+---
+
+## The Complete Picture
+
+**Current:**
+
+```
+FastAPI
+   ↓
+Repository
+   ↓
+Session
+   ↓
+create_engine
+   ↓
+psycopg2
+   ↓
+PostgreSQL
+```
+
+**Future:**
+
+```
+FastAPI
+   ↓
+Repository
+   ↓
+AsyncSession
+   ↓
+create_async_engine
+   ↓
+asyncpg
+   ↓
+PostgreSQL
+```
+
+Every layer now supports asynchronous execution.
+
+---
+
+## 3. What Doesn't Change?
+
+This is an important point. **Your architecture stays the same.** You still have:
+
+```
+Router → Service → Repository
+```
+
+You're not redesigning the application — you're **replacing the plumbing underneath**.
+
+---
+
+## 4. What Files Will Change?
+
+Current structure:
+
+```
+app/
+├── database/
+│   └── database.py
+├── repositories/
+│   └── user_repository.py
+├── services/
+│   └── user_service.py
+└── routers/
+    └── users.py
+```
+
+Not every file changes. Let's classify them.
+
+| File | Changes? | Why |
+|---|---|---|
+| `database/database.py` | ✅ Yes | Engine and session become async |
+| `repositories/user_repository.py` | ✅ Yes | Queries become async |
+| `services/user_service.py` | ✅ Yes | Awaits repository methods |
+| `routers/users.py` | ✅ Yes | Awaits service methods |
+| `schemas/` | ❌ No | Data models stay the same |
+| `models/` | ❌ Almost never | ORM mappings are unchanged |
+| `jwt.py` | ❌ No | CPU work |
+| `security.py` | ❌ No | Password hashing is CPU work |
+| `config.py` | ❌ No | Configuration is unaffected |
+
+Notice how most of your project doesn't need to change.
+
+---
+
+## 5. The Async Call Chain
+
+**Today's synchronous request:**
+
+```
+Request → Router → Service → Repository → Database → Return
+```
+
+**Tomorrow:**
+
+```
+Request
+   ↓
+Router
+   ↓ await
+Service
+   ↓ await
+Repository
+   ↓ await
+Database
+   ↓
+Resume
+   ↓
+Return
+```
+
+Every layer awaits the next one.
+
+---
+
+## 6. Why the Whole Chain Must Be Async
+
+Imagine only the repository is async:
+
+```python
+async def get_all(...)
+```
+
+But the service is:
+
+```python
+def get_users():
+    repository.get_all()
+```
+
+**Problem.** You can't properly call an async function from synchronous code without running the event loop yourself.
+
+Instead:
+
+```python
+async def get_users():
+    return await repository.get_all()
+```
+
+Now the chain matches.
+
+### Visual
+
+```
+Router
+   ↓ await
+Service
+   ↓ await
+Repository
+   ↓ await
+Database
+```
+
+**If one link is async, the callers above it generally need to become async too.**
+
+---
+
+## 7. Why Models Don't Change
+
+```python
+class User(Base):
+    ...
+```
+
+doesn't care whether the database connection is synchronous or asynchronous. A model simply describes table name, columns, and relationships. It isn't responsible for executing queries.
+
+---
+
+## 8. Why Schemas Don't Change
+
+Pydantic doesn't know or care how data arrived — whether the user came from PostgreSQL, Redis, MongoDB, or memory, your schema is still `UserResponse`. No changes needed.
+
+---
+
+## 9. What About Password Hashing?
+
+Still:
+
+```python
+password_hasher.hash(...)
+```
+
+No `await`. Hashing is CPU work — making it async wouldn't help.
+
+---
+
+## 10. What About JWT?
+
+Still:
+
+```python
+jwt.encode(...)
+```
+
+Still synchronous. JWT creation is pure computation.
+
+---
+
+## 11. The Big Migration Plan
+
+We're not going to change everything at once — we'll migrate **one layer at a time**.
+
+| Step | Layer | Change |
+|---|---|---|
+| 1 | Database | `Engine` → `AsyncEngine` |
+| 2 | Session | `Session` → `AsyncSession` |
+| 3 | Repository | Replace synchronous queries |
+| 4 | Services | Await repository methods |
+| 5 | Routers | Await service methods |
+
+### Mental Model
+
+You're not rewriting your project. You're replacing the synchronous database plumbing with asynchronous plumbing. Everything above it simply learns to `await`.
+
+---
+
+## Best Practices
+
+- Migrate from the bottom up (database → repository → service → router).
+- Keep your architecture unchanged.
+- Don't mix sync and async database APIs in the same call chain.
+- Leave CPU-bound utilities (JWT, password hashing) synchronous.
+
+---
+
+## Interview Questions
+
+1. Why isn't `async def` alone enough to make database code asynchronous?
+2. What components are required for async SQLAlchemy?
+3. Why don't ORM models need to change during migration?
+4. Why do schemas remain unchanged?
+5. Why should you migrate the call chain from the database upward?
+
+---
+
+## Before We Start Coding
+
+There's one more concept needed before editing the project: **the difference between synchronous SQLAlchemy and asynchronous SQLAlchemy APIs.** Specifically:
+
+- Why `.query()` disappears
+- Why `select()` becomes the preferred approach
+- Why `execute()` returns a `Result`
+- What `.scalars()` does
+- Why `.first()` and `.all()` look different in async code
+
+Once these API differences are understood, the migration itself becomes straightforward rather than feeling like memorizing new syntax.
