@@ -84,3 +84,17 @@ def require_roles(*roles: str) -> Callable[..., User]:
         return current_user
 
     return dependency
+
+
+def require_owner_or_admin(
+    user_id: int,
+    current_user: User = Depends(get_current_user),
+) -> User:
+
+    if current_user.role == "admin":
+        return current_user
+
+    if current_user.id != user_id:
+        raise ForbiddenError()
+
+    return current_user

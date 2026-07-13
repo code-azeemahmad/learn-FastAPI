@@ -4,6 +4,12 @@ from app.schemas.user import UserCreate, UserPatch, UserResponse, UserUpdate
 from app.services.dependencies import get_user_service
 from app.services.user_service import UserService
 
+from app.services.dependencies import require_owner_or_admin
+from app.services.dependencies import get_user_service, require_roles
+
+from app.models.user import User
+
+
 router = APIRouter(prefix="/users", tags=["User"])
 
 # refactor the routes to such extent that they read like reading English sentences
@@ -30,31 +36,20 @@ def update_user(user_id: int, user_data: UserUpdate, service: UserService = Depe
     return service.update_user(user_id, user_data)
 
 
-@router.patch("/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK)
-def patch_user(user_id: int, user_data: UserPatch, service: UserService = Depends(get_user_service)) -> UserResponse:
-    return service.patch_user(user_id, user_data)
-
-
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(user_id: int, service: UserService = Depends(get_user_service)) -> None:
-    service.delete_user(user_id)
+def delete_user(
+    user_id: int,
+    service: UserService = Depends(get_user_service),
+    current_user: User = Depends(require_roles("admin")),
+):
+    return service.delete_user(user_id)
 
 
-'''
-Client
-   │
-   ▼
-Router
-   │
-   ▼
-UserService
-   │
-   ▼
-UserRepository
-   │
-   ▼
-SQLAlchemy
-   │
-   ▼
-PostgreSQL
-'''
+@router.patch("/{user_id}")
+def update_user(
+    user_id: int,
+    request: UserPatch,
+    service: UserService = Depends(get_user_service),
+    current_user: User = Depends(require_owner_or_admin),
+):
+    return service.patch_user(user_id, request)
