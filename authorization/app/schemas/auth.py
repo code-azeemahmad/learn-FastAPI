@@ -5,7 +5,7 @@ class RegisterRequest(BaseModel):   #  this schema belongs to auth
     name: str = Field(..., min_length=2)
     email: EmailStr
     password: str = Field(..., min_length=8)
-
+    
 
 class LoginRequest(BaseModel):
     """Request schema for user login."""

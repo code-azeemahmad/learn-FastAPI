@@ -1,4 +1,4 @@
-from fastapi import Depends, security
+from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -12,6 +12,7 @@ from app.core.JWT import JWTService
 
 from app.models.user import User
 from app.exceptions.user import InvalidCredentialsError
+from app.exceptions.auth import ForbiddenError
 
 security = HTTPBearer()
 
@@ -57,3 +58,35 @@ def get_current_user(
         raise InvalidCredentialsError()
 
     return user
+
+
+def require_admin(
+    current_user: User = Depends(get_current_user),
+) -> User:
+
+    if current_user.role != "admin":
+        raise ForbiddenError()
+
+    return current_user
+
+
+'''
+Authentication
+
+Request
+    │
+    ▼
+JWT
+    │
+    ▼
+get_current_user()
+    │
+    ▼
+User object
+    │
+    ▼
+require_admin()
+    │
+    ▼
+Admin User
+'''

@@ -5,7 +5,9 @@ from app.schemas.user import UserResponse
 from app.services.auth_service import AuthService
 from app.services.dependencies import get_auth_service
 from app.models.user import User
-from app.services.dependencies import get_current_user
+from app.services.dependencies import get_current_user, get_user_service, require_admin
+from app.services.user_service import UserService
+
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -25,21 +27,10 @@ def get_profile(current_user: User = Depends(get_current_user)) -> UserResponse:
     return current_user
 
 
-
-"""get_current_user
-Request
-↓
-Authorization: Bearer eyJhbGc...
-↓
-get_current_user()
-↓
-Verify JWT
-↓
-Extract sub = 5
-↓
-Load User(id=5)
-↓
-Return User object
-↓
-Route
-"""
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user(
+    user_id: int,
+    service: UserService = Depends(get_user_service),
+    current_user: User = Depends(require_admin),
+):
+    return service.delete_user(user_id)
