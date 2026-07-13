@@ -1,0 +1,45 @@
+                POST /auth/register
+                       │
+                       ▼
+                 AuthService
+                       │
+          Hash Password (PasswordHasher)
+                       │
+                       ▼
+                  UserRepository
+                       │
+                       ▼
+                  PostgreSQL
+
+
+                POST /auth/login
+                       │
+                       ▼
+                 AuthService
+                       │
+       Verify Password (PasswordHasher)
+                       │
+                       ▼
+                  JWTService
+                       │
+                 Create JWT
+                       │
+                       ▼
+                  Access Token
+
+
+              GET /users/me
+                       │
+        Authorization: Bearer <JWT>
+                       │
+                       ▼
+             get_current_user()
+                       │
+                 JWTService
+               Verify Token
+                       │
+                       ▼
+               UserRepository
+                       │
+                       ▼
+                Current User
