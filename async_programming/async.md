@@ -1312,3 +1312,436 @@ There's one more concept needed before editing the project: **the difference bet
 - Why `.first()` and `.all()` look different in async code
 
 Once these API differences are understood, the migration itself becomes straightforward rather than feeling like memorizing new syntax.
+
+
+# Understanding Async SQLAlchemy APIs
+
+## 1. Your Current Code
+
+Right now your repository looks like this:
+
+```python
+def get_by_id(self, user_id: int) -> User | None:
+    return (
+        self.db.query(User)
+        .filter(User.id == user_id)
+        .first()
+    )
+```
+
+You've probably written dozens of queries like this. The important part is: `self.db.query(User)`.
+
+---
+
+## 2. Why Does `.query()` Disappear?
+
+Historically SQLAlchemy had two APIs.
+
+**ORM API:** `session.query(User)`
+
+**Core API:** `select(User)`
+
+These evolved independently for years, leading to duplicate concepts and inconsistent syntax. So in SQLAlchemy 2.0 the maintainers standardized on `select()`.
+
+Instead of `session.query(User)`, we now build a SQL statement first:
+
+```python
+stmt = select(User)
+```
+
+Think of it as building a query object.
+
+### Mental Model
+
+**Old style:**
+
+```
+Session → Build Query → Execute
+```
+
+**New style:**
+
+```
+Build SQL Statement → Session Executes Statement → Result
+```
+
+Notice that building and executing are now **separate steps**.
+
+---
+
+## 3. What Is `select()`?
+
+Imagine writing SQL:
+
+```sql
+SELECT * FROM users;
+```
+
+In SQLAlchemy:
+
+```python
+stmt = select(User)
+```
+
+You're not executing anything — you're only *describing* the query.
+
+> "`select()` builds a blueprint."
+
+---
+
+## 4. Nothing Has Happened Yet
+
+Suppose:
+
+```python
+stmt = select(User)
+```
+
+Has PostgreSQL been contacted? **No.** No network request, no database connection, no rows. You only created an object representing `SELECT * FROM users;`.
+
+---
+
+## 5. Who Executes It?
+
+**The session.**
+
+Instead of `session.query(...)`, we now write:
+
+```python
+result = session.execute(stmt)
+```
+
+Or in async:
+
+```python
+result = await session.execute(stmt)
+```
+
+The session sends the statement to PostgreSQL.
+
+### Visual
+
+```
+select(User)
+   ↓
+SQL Statement
+   ↓
+Session.execute()
+   ↓
+Database
+   ↓
+Rows
+```
+
+---
+
+## 6. Why Doesn't `execute()` Return Users?
+
+Here's where beginners get confused.
+
+Imagine SQL:
+
+```sql
+SELECT id, name FROM users;
+```
+
+Does SQL always return full `User` objects? **No.** Sometimes it returns users, IDs, counts, multiple tables, or aggregates.
+
+So SQLAlchemy can't assume the result contains ORM objects. Instead:
+
+```python
+result = await session.execute(stmt)
+```
+
+returns a **`Result` object**. Think of `Result` as a container.
+
+### Visual
+
+```
+Database → Rows → Result Object
+
+(not User directly)
+```
+
+---
+
+## 7. What Is Inside `Result`?
+
+Suppose:
+
+```python
+stmt = select(User)
+```
+
+The result contains rows like:
+
+```
+(User(id=1),)
+(User(id=2),)
+(User(id=3),)
+```
+
+Notice each row is a **tuple** — even though there's only one thing selected. Why? Because SQLAlchemy also supports:
+
+```python
+select(User, Address)
+```
+
+Then rows become `(User(...), Address(...))`. So the API is consistent.
+
+---
+
+## 8. What Does `.scalars()` Do?
+
+Since you selected only one ORM entity (`select(User)`), you don't want tuples — you want `User, User, User`.
+
+That's exactly what `result.scalars()` does. It **unwraps the first column** from every row.
+
+**Before:**
+
+```
+(User1,)
+(User2,)
+(User3,)
+```
+
+**After:**
+
+```
+User1
+User2
+User3
+```
+
+---
+
+## 9. What Does `.all()` Do?
+
+**Current sync:**
+
+```python
+.query(...).all()
+```
+
+returns `list[User]`.
+
+**Async equivalent:**
+
+```python
+result.scalars().all()
+```
+
+Still returns `list[User]`. The output is identical — only the path to get there changed.
+
+---
+
+## 10. What About `.first()`?
+
+**Current:**
+
+```python
+.query(...).first()
+```
+
+**New:**
+
+```python
+result.scalars().first()
+```
+
+Still returns `User | None`. Nothing changed conceptually.
+
+---
+
+## 11. Filtering
+
+**Current:**
+
+```python
+.query(User).filter(User.email == email)
+```
+
+**New:**
+
+```python
+select(User).where(User.email == email)
+```
+
+Notice: `.filter()` becomes `.where()` — because SQL uses `WHERE email = ...`. The new API mirrors SQL more closely.
+
+---
+
+## 12. Complete Comparison
+
+**Current synchronous:**
+
+```python
+user = (
+    session.query(User)
+    .filter(User.id == 1)
+    .first()
+)
+```
+
+Think: `Session → Query → Filter → First`
+
+**Async SQLAlchemy:**
+
+```python
+stmt = select(User).where(User.id == 1)
+
+result = await session.execute(stmt)
+
+user = result.scalars().first()
+```
+
+Think: `Build Statement → Execute → Result → Extract ORM Objects → First`
+
+More steps, but each has a clear responsibility.
+
+---
+
+## 13. Another Example — Get All Users
+
+**Current:**
+
+```python
+users = session.query(User).all()
+```
+
+**Async:**
+
+```python
+stmt = select(User)
+
+result = await session.execute(stmt)
+
+users = result.scalars().all()
+```
+
+The final type is still `list[User]`.
+
+---
+
+## 14. Another Example — Find by Email
+
+**Current:**
+
+```python
+.query(User)
+.filter(User.email == email)
+.first()
+```
+
+**Async:**
+
+```python
+stmt = (
+    select(User)
+    .where(User.email == email)
+)
+
+result = await session.execute(stmt)
+
+user = result.scalars().first()
+```
+
+Again, same logic.
+
+---
+
+## 15. The Pattern You'll Memorize
+
+Almost every repository method becomes:
+
+```python
+stmt = ...
+
+result = await session.execute(stmt)
+
+return result.scalars().first()
+```
+
+or
+
+```python
+stmt = ...
+
+result = await session.execute(stmt)
+
+return result.scalars().all()
+```
+
+You'll write this hundreds of times.
+
+---
+
+## Cheat Sheet
+
+| Sync SQLAlchemy | Async SQLAlchemy |
+|---|---|
+| `session.query(User)` | `select(User)` |
+| `.filter(...)` | `.where(...)` |
+| `.all()` | `result.scalars().all()` |
+| `.first()` | `result.scalars().first()` |
+| `session.query(...)` | `await session.execute(stmt)` |
+
+---
+
+## Mental Model
+
+Think of the async flow as a pipeline:
+
+```
+Build Statement
+       │
+       ▼
+   select(User)
+       │
+       ▼
+Execute Statement
+       │
+       ▼
+await session.execute(stmt)
+       │
+       ▼
+Result Container
+       │
+       ▼
+Extract ORM Objects
+       │
+       ▼
+   scalars()
+       │
+       ▼
+Choose One or Many
+       │
+   ┌───┴────┐
+   ▼        ▼
+first()   all()
+```
+
+Once this pipeline clicks, you'll find that async queries are not fundamentally harder than synchronous ones — they're just more explicit.
+
+---
+
+## Interview Questions
+
+1. Why was `session.query()` replaced in SQLAlchemy 2.0?
+2. What does `select()` return?
+3. Why does `execute()` return a `Result` object instead of ORM models?
+4. What problem does `.scalars()` solve?
+5. What's the difference between `.first()` and `.all()` after calling `.scalars()`?
+
+---
+
+## Next Lesson
+
+Now that you understand the new API, we'll begin the actual migration of your project. We'll start with the foundation:
+
+- Install the async PostgreSQL driver (`asyncpg`)
+- Convert `create_engine()` → `create_async_engine()`
+- Convert `SessionLocal` → `AsyncSession`
+- Rewrite your `get_db()` dependency
+
+After that, your repositories will be ready to become asynchronous. This is where your project will begin its transition from a synchronous FastAPI application to a truly async one.
