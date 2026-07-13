@@ -4,6 +4,7 @@ import jwt
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from app.exceptions.user import InvalidCredentialsError
 from app.core.config import settings
+from app.schemas.auth import TokenPayload
 
 security = HTTPBearer()
 
@@ -27,10 +28,7 @@ class JWTService:
         return jwt.encode(payload, settings.SECRET_KEY, algorithm=ALGORITHM)    
 
 
-    def verify_access_token(
-        self,
-        token: str,
-    ) -> dict:
+    def verify_access_token(self, token: str) -> TokenPayload:
         """
         Decode and verify a JWT.
 
@@ -44,7 +42,7 @@ class JWTService:
                 algorithms=[ALGORITHM],
             )
 
-            return payload
+            return TokenPayload.model_validate(payload) # Pydantic validates the decoded data and returns a TokenPayload instance
 
         except ExpiredSignatureError:
             raise InvalidCredentialsError()

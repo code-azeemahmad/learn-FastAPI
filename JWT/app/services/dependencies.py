@@ -49,7 +49,7 @@ def get_current_user(
         credentials.credentials
     )
 
-    user_id = int(payload["sub"])
+    user_id = int(payload.sub)  # Access claims with attributes (payload.sub) instead of dictionary keys.
 
     user = repository.get_by_id(user_id)
 

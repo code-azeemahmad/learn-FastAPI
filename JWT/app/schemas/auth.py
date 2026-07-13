@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr
+from datetime import datetime
 
 class RegisterRequest(BaseModel):   #  this schema belongs to auth
     name: str = Field(..., min_length=2)
@@ -18,30 +19,28 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 
+class TokenPayload(BaseModel):
+    sub: str
+    exp: datetime
+    iat: datetime
+
+
 '''
-Client
+A JWT is just JSON.
+For example:
+{
+    "sub": "5",
+    "iat": 1752300000,
+    "exp": 1752301800
+}
 
-↓
+PyJWT returns: dict[str, Any]
+But dictionaries don't provide:
 
-POST /auth/login
+- Type safety
+- Validation
+- Autocomplete
+- Self-documentation
 
-↓
-
-AuthService
-
-↓
-
-Verify Password
-
-↓
-
-JWTService
-
-↓
-
-Generate Token
-
-↓
-
-Return Token
+That's why we convert the decoded payload into a Pydantic model.
 '''
